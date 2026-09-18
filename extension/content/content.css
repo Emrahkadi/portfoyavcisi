@@ -1,0 +1,25 @@
+/* Content script stilleri - Sahibinden sayfasında görünecek UI */
+.pi-indicator {
+  position: fixed;
+  bottom: 20px;
+  right: 20px;
+  background: #3b82f6;
+  color: white;
+  padding: 8px 16px;
+  border-radius: 20px;
+  font-size: 12px;
+  font-weight: 600;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+  z-index: 999999;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.pi-indicator:hover {
+  background: #2563eb;
+  transform: translateY(-2px);
+}
+
+.pi-indicator.hidden {
+  display: none;
+}

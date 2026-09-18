@@ -1,0 +1,60 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=400, initial-scale=1.0">
+  <title>Portfolio Intel</title>
+  <link rel="stylesheet" href="popup.css">
+</head>
+<body>
+  <div class="container">
+    <!-- Header -->
+    <div class="header">
+      <h1>� Portföy Avcısı</h1>
+      <div class="status" id="status">Bağlanıyor...</div>
+    </div>
+
+    <!-- Login Section -->
+    <div id="loginSection" class="section hidden">
+      <h2>Giriş Yap</h2>
+      <input type="email" id="email" placeholder="E-posta" />
+      <input type="password" id="password" placeholder="Şifre" />
+      <button id="loginBtn" class="btn-primary">Giriş Yap</button>
+      <div id="loginError" class="error hidden"></div>
+    </div>
+
+    <!-- Main Section -->
+    <div id="mainSection" class="section hidden">
+      <!-- Action Buttons -->
+      <div class="actions">
+        <button id="fetchBtn" class="btn-primary">📥 Günlük İlanları Getir</button>
+        <button id="reloadPageBtn" class="btn-secondary">🔄 Sayfayı Yenile</button>
+      </div>
+
+      <!-- Listings -->
+      <div class="listings">
+        <div class="listings-header">
+          <h3>Bugün Eklenen İlanlar</h3>
+          <span id="listingCount" class="badge">0</span>
+        </div>
+        <div id="listingsList" class="listings-list">
+          <div class="empty-state">
+            Sahibinden'de bir arama sayfası açın, sonra "Günlük İlanları Getir" butonuna tıklayın.
+          </div>
+        </div>
+      </div>
+
+      <!-- AI Info -->
+      <div class="ai-info">
+        <div class="ai-badge">🤖 AI Powered</div>
+        <p class="ai-text">İlanı eklediğinizde AI otomatik olarak kişiselleştirilmiş mesaj oluşturur. Dashboard'dan gönderebilirsiniz.</p>
+      </div>
+
+      <!-- Logout -->
+      <button id="logoutBtn" class="btn-logout">Çıkış Yap</button>
+    </div>
+  </div>
+
+  <script src="popup.js"></script>
+</body>
+</html>
