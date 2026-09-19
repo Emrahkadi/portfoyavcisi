@@ -12,7 +12,8 @@
     "https://www.sahibinden.com/*",
     "https://leadseak.com/*",
     "https://www.leadseak.com/*",
-    "http://localhost:3000/*"
+    "http://localhost:3000/*",
+    "http://localhost:3002/*"
   ],
   "background": {
     "service_worker": "background/background.js"

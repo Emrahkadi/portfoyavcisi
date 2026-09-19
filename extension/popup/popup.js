@@ -2,7 +2,14 @@
 // Token-based auth kullanır
 
 // Leadseak - Lead Seek (Müşteri Adayı Ara)
-const API_BASE = 'https://leadseak.com';
+// Development ve Production URL'leri - hangisi çalışıyorsa onu kullan
+const API_URLS = {
+  production: 'https://leadseak.com',
+  development: 'http://localhost:3002',
+};
+
+// Başlangıçta development URL'i kullan, gerekirse production'a geç
+let API_BASE = API_URLS.development;
 
 // DOM Elements
 const loginSection = document.getElementById('loginSection');
@@ -30,6 +37,7 @@ async function init() {
   const stored = await chrome.storage.local.get(['authToken', 'userEmail']);
   if (stored.authToken) {
     authToken = stored.authToken;
+    API_BASE = stored.apiBase || API_BASE;
     showMainSection(stored.userEmail);
   } else {
     showLoginSection();
@@ -68,8 +76,10 @@ async function handleLogin() {
     }
 
     authToken = data.token;
+    // Başarılı giriş URL'ini sakla
     await chrome.storage.local.set({
       authToken,
+      apiBase: API_BASE,
       userEmail: data.user.email,
       userName: data.user.name,
     });
