@@ -254,23 +254,166 @@
 
     console.log('Extracted detail:', { title, price, sizeSqm, rooms, phone });
 
-    return {
+    return extractDetailFull();
+  }
+
+  // TÜM bilgileri çıkar - ilan detay sayfası
+  function extractDetailFull() {
+    const url = window.location.href;
+    const externalId = extractIdFromUrl(url) || `detail-${Date.now()}`;
+
+    // Başlık
+    const title = document.querySelector('h1.classifiedDetailTitle, h1')?.textContent?.trim() || '';
+
+    // Fiyat
+    const priceEl = document.querySelector(
+      '.classifiedDetailPrice .classifiedPrice, ' +
+      '.classifiedDetailPrice, ' +
+      '.price, ' +
+      '[class*="price"]'
+    );
+    const priceText = priceEl?.textContent?.trim() || '';
+    const price = parsePrice(priceText);
+
+    // Özellikler
+    const infoItems = document.querySelectorAll(
+      '.classifiedInfoList li, ' +
+      '.detail-info-item, ' +
+      'ul[class*="info"] li, ' +
+      '[class*="classifiedInfo"] li'
+    );
+
+    let sizeSqm = 0;
+    let rooms = '';
+    let floor = null;
+    let totalFloors = null;
+    let buildingAge = null;
+    let heatingType = '';
+    let bathroomCount = null;
+    let balcony = false;
+    let furnished = false;
+    let parking = false;
+    let elevator = false;
+    let inComplex = false;
+
+    infoItems.forEach(item => {
+      const text = item.textContent.trim();
+      const m2Match = text.match(/(\d+)\s*m\s*[²2]/i);
+      if (m2Match) sizeSqm = parseInt(m2Match[1]);
+
+      const roomMatch = text.match(/(\d+\+\d+)/);
+      if (roomMatch) rooms = roomMatch[1];
+
+      if (text.includes('Kat') && !text.includes('Kat Sayısı')) {
+        const floorMatch = text.match(/(\d+)/);
+        if (floorMatch) floor = parseInt(floorMatch[1]);
+      }
+      if (text.includes('Kat Sayısı')) {
+        const totalMatch = text.match(/(\d+)/);
+        if (totalMatch) totalFloors = parseInt(totalMatch[1]);
+      }
+
+      if (text.includes('Bina Yaşı') || text.includes('Yaşı')) {
+        const ageMatch = text.match(/(\d+)/);
+        if (ageMatch) buildingAge = parseInt(ageMatch[1]);
+      }
+      if (text.includes('Isınma')) heatingType = text.replace('Isınma', '').replace('Tipi', '').trim();
+      if (text.includes('Banyo')) {
+        const bMatch = text.match(/(\d+)/);
+        if (bMatch) bathroomCount = parseInt(bMatch[1]);
+      }
+      if (text.includes('Balkon')) balcony = true;
+      if (text.includes('Eşyalı')) furnished = true;
+      if (text.includes('Otopark')) parking = true;
+      if (text.includes('Asansör')) elevator = true;
+      if (text.includes('Site') || text.includes('Kompleks')) inComplex = true;
+    });
+
+    if (!sizeSqm) {
+      const allText = document.body.textContent || '';
+      const m2Match = allText.match(/(\d+)\s*m\s*[²2]/);
+      if (m2Match) sizeSqm = parseInt(m2Match[1]);
+    }
+
+    // Konum
+    const locationEl = document.querySelector(
+      '.classifiedDetailLocation, .location, [class*="location"]'
+    );
+    const location = locationEl?.textContent?.trim() || '';
+
+    // İlan sahibi
+    const ownerEl = document.querySelector(
+      '.userName, .seller-name, [class*="userName"], [class*="seller"]'
+    );
+    const ownerName = ownerEl?.textContent?.trim() || '';
+
+    // Telefon
+    const phoneEl = document.querySelector(
+      '.phone-number, [data-phone], [class*="phone"]'
+    );
+    const phone = phoneEl?.dataset?.phone || phoneEl?.textContent?.trim() || '';
+
+    // AÇIKLAMA - ilan detayı
+    const descriptionEl = document.querySelector(
+      '.classifiedDescription, .description, [class*="description"], ' +
+      '.classified-detail-description, #classifiedDescription'
+    );
+    const description = descriptionEl?.textContent?.trim() || '';
+
+    // Fotoğraflar
+    const photoEls = document.querySelectorAll(
+      '.classifiedDetailPhotos img, .detail-photos img, ' +
+      '[class*="photo"] img, [class*="gallery"] img, .swiper-slide img'
+    );
+    const photos = Array.from(photoEls)
+      .map(img => img.src || img.dataset.src || img.dataset.lazy)
+      .filter(s => s && !s.includes('placeholder') && !s.startsWith('data:'))
+      .slice(0, 20);
+
+    // Tüm özellikleri ham olarak topla
+    const allFeatures = Array.from(infoItems).map(item => item.textContent.trim()).filter(Boolean);
+
+    // Property type tahmin et
+    let propertyType = 'APARTMENT';
+    if (title.match(/villa|Villa/i)) propertyType = 'VILLA';
+    else if (title.match(/müstakil|Müstakil|Ev\b/)) propertyType = 'HOUSE';
+    else if (title.match(/ofis|Ofis|office/i)) propertyType = 'OFFICE';
+    else if (title.match(/arsa|Arsa/i)) propertyType = 'LAND';
+    else if (title.match(/dükkan|Dükkan|commercial/i)) propertyType = 'COMMERCIAL';
+
+    const detail = {
       externalId,
       url,
       title,
       price,
+      priceText,
       sizeSqm,
       rooms,
       floor,
+      totalFloors,
       buildingAge,
+      heatingType,
+      bathroomCount,
+      balcony,
+      furnished,
+      parking,
+      elevator,
+      inComplex,
       city: extractCity(location) || 'İstanbul',
       district: extractDistrict(location),
       neighborhood: extractNeighborhood(location),
+      location,
       isOwner: !url.includes('/emlak-ofisi/'),
       contactName: ownerName,
       contactPhone: phone,
-      propertyType: 'APARTMENT',
+      description,
+      photos,
+      allFeatures,
+      propertyType,
     };
+
+    console.log('Extracted full detail:', detail);
+    return detail;
   }
 
   // Helper functions
@@ -555,6 +698,12 @@
     if (request.action === 'extractSahibindenUser') {
       const user = extractSahibindenUser();
       sendResponse({ user });
+      return true;
+    }
+
+    if (request.action === 'extractDetailFull') {
+      const detail = extractDetailFull();
+      sendResponse({ detail });
       return true;
     }
   });

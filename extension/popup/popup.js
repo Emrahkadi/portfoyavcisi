@@ -242,37 +242,56 @@ async function handleAddListing(externalId) {
 
       try {
         const detailResponse = await chrome.tabs.sendMessage(detailTab.id, {
-          action: 'extractDetail',
+          action: 'extractDetailFull',
         });
-        if (detailResponse && detailResponse.listing) {
-          const d = detailResponse.listing;
+        if (detailResponse && detailResponse.detail) {
+          const d = detailResponse.detail;
           sizeSqm = d.sizeSqm || sizeSqm;
           price = d.price || price;
           fullTitle = d.title || fullTitle;
           rooms = d.rooms || rooms;
           contactPhone = d.contactPhone || contactPhone;
           contactName = d.contactName || contactName;
+          // Tüm yeni alanları sakla
+          listing._fullDetail = d;
         }
       } catch (e) {}
 
       try { await chrome.tabs.remove(detailTab.id); } catch (e) {}
     }
 
+    const d = listing._fullDetail || {};
     const payload = {
       externalId: listing.externalId || `ext-${Date.now()}-${Math.random()}`,
       title: fullTitle || listing.title || 'İsimsiz İlan',
       price: price,
       sizeSqm: sizeSqm,
       rooms: rooms,
-      city: listing.city || 'İstanbul',
-      district: listing.district || '',
-      neighborhood: listing.neighborhood || '',
-      isOwner: listing.isOwner ?? true,
+      city: listing.city || d.city || 'İstanbul',
+      district: listing.district || d.district || '',
+      neighborhood: listing.neighborhood || d.neighborhood || '',
+      isOwner: listing.isOwner ?? d.isOwner ?? true,
       daysOnMarket: listing.daysOnMarket || 0,
       url: listing.url || '',
-      contactName: contactName,
-      contactPhone: contactPhone,
-      propertyType: listing.propertyType || 'APARTMENT',
+      contactName: contactName || d.contactName || '',
+      contactPhone: contactPhone || d.contactPhone || '',
+      propertyType: listing.propertyType || d.propertyType || 'APARTMENT',
+      // Tüm yeni alanlar
+      description: d.description || '',
+      photos: d.photos || [],
+      allFeatures: d.allFeatures || [],
+      floor: d.floor || null,
+      totalFloors: d.totalFloors || null,
+      buildingAge: d.buildingAge || null,
+      heatingType: d.heatingType || '',
+      bathroomCount: d.bathroomCount || null,
+      balcony: d.balcony || false,
+      furnished: d.furnished || false,
+      parking: d.parking || false,
+      elevator: d.elevator || false,
+      inComplex: d.inComplex || false,
+      location: d.location || '',
+      priceText: d.priceText || '',
     };
 
     if (!payload.title || payload.price <= 0 || payload.sizeSqm <= 0) {
@@ -301,27 +320,41 @@ async function handleAddListing(externalId) {
     btn.classList.add('added');
     btn.innerHTML = '🤖 AI Mesaj Hazırlanıyor...';
 
-    // AI mesaj oluştur
+    // WhatsApp otomatik gönderim (AI mesaj oluştur + WhatsApp gönder)
+    btn.classList.add('added');
+    btn.innerHTML = '🤖 AI + WhatsApp...';
+
     try {
-      const aiResponse = await fetch(`${API_BASE}/api/extension/generate-ai-message`, {
+      const waResponse = await fetch(`${API_BASE}/api/extension/whatsapp-auto-send`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
           'Authorization': `Bearer ${authToken}`,
         },
-        body: JSON.stringify({ listingId: data.listing.id }),
+        body: JSON.stringify({ listingId: data.listing.id, sendWhatsApp: true }),
       });
 
-      if (aiResponse.ok) {
-        btn.innerHTML = '✓ AI Mesaj Hazır';
-        showNotification(`🤖 AI mesajı hazır! Dashboard'dan gönderebilirsiniz.`);
+      const waData = await waResponse.json();
+
+      if (waResponse.ok && waData.success) {
+        const sent = waData.whatsapp?.sent;
+        if (sent) {
+          btn.innerHTML = '✓ WhatsApp Gönderildi';
+          showNotification(`📲 WhatsApp mesajı gönderildi! AI: ${waData.message.substring(0, 60)}...`);
+        } else if (waData.whatsapp?.enabled) {
+          btn.innerHTML = '⚠ Mesaj Hazır';
+          showNotification(`⚠ Mesaj hazır ama gönderilemedi: ${waData.whatsapp?.error || 'bilinmeyen hata'}`);
+        } else {
+          btn.innerHTML = '✓ AI Mesaj Hazır';
+          showNotification(`🤖 AI mesajı hazır! WhatsApp API yapılandırılmamış. Dashboard'dan gönderebilirsiniz.`);
+        }
       } else {
         btn.innerHTML = '✓ Eklendi';
         showNotification(`✅ Eklendi! AI mesajı daha sonra hazırlanacak.`);
       }
     } catch (err) {
       btn.innerHTML = '✓ Eklendi';
-      showNotification(`✅ Eklendi!`);
+      showNotification(`✅ Eklendi! (${err.message})`);
     }
   } catch (err) {
     btn.disabled = false;

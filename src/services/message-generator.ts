@@ -24,6 +24,15 @@ export class MessageGenerator {
 
     const ownerName = listing.contactName || 'Sayın';
     const location = `${listing.district}${listing.neighborhood ? ' ' + listing.neighborhood : ''} mahallesi`;
+    const rawData = (listing as any).rawData || {};
+    const allFeatures: string[] = rawData.allFeatures || [];
+    const description: string = (listing as any).description || '';
+
+    // Özelliklerden vurgulanacakları seç
+    const heating = allFeatures.find((f: string) => f.includes('Isınma'))?.replace(/^[^:]*:/, '').trim() || '';
+    const buildingAge = allFeatures.find((f: string) => f.includes('Bina Yaşı'))?.replace(/^[^:]*:/, '').trim() || '';
+    const floorInfo = allFeatures.find((f: string) => f.includes('Kat '))?.replace(/^[^:]*:/, '').trim() || '';
+    const bathrooms = allFeatures.find((f: string) => f.includes('Banyo'))?.replace(/^[^:]*:/, '').trim() || '';
 
     let opener = `Merhaba ${ownerName},`;
 
@@ -42,6 +51,9 @@ export class MessageGenerator {
     }
 
     body += `Bu bölgede aktif alıcı portföyümüz bulunuyor. `;
+    if (buildingAge && parseInt(buildingAge) > 5) {
+      body += `Bölgedeki ${buildingAge} yaş üstü daireler için özellikle talep var. `;
+    }
     body += `Size herhangi bir komisyon yükü getirmeden, sadece uygun alıcılarla buluşmanızı sağlayabiliriz. `;
     body += `5 dakikalık bir telefon görüşmesi için müsait misiniz?`;
 
@@ -65,6 +77,10 @@ export class MessageGenerator {
 
       const analysis = listing.aiAnalysis as any;
       const comparable = analysis?.comparable;
+      const rawData = (listing as any).rawData || {};
+      const description = (listing as any).description || '';
+      const allFeatures: string[] = rawData.allFeatures || [];
+      const photoCount = (rawData.photos || []).length;
 
       const prompt = `Sen bir gayrimenkul danışmanısın. Aşağıdaki ilan sahibine WhatsApp üzerinden ilk temas mesajı yazacaksın.
 
@@ -76,6 +92,16 @@ export class MessageGenerator {
 - m²: ${listing.sizeSqm}
 - m² Fiyatı: ${(listing.pricePerSqm || 0).toLocaleString('tr-TR')} TL
 - Oda: ${listing.rooms || 'Belirtilmemiş'}
+- Kat: ${(listing as any).floor ? `${(listing as any).floor}. kat` : 'Belirtilmemiş'}
+- Bina Yaşı: ${(listing as any).buildingAge ? (listing as any).buildingAge + ' yıl' : 'Belirtilmemiş'}
+- Isınma: ${(listing as any).heatingType || 'Belirtilmemiş'}
+- Banyo: ${rawData.bathroomCount || 'Belirtilmemiş'}
+- Balkon: ${rawData.balcony ? 'Var' : 'Yok/Belirtilmemiş'}
+- Eşyalı: ${listing.furnished ? 'Evet' : 'Hayır'}
+- Otopark: ${rawData.parking ? 'Var' : 'Yok'}
+- Asansör: ${rawData.elevator ? 'Var' : 'Yok'}
+- Site içi: ${rawData.inComplex ? 'Evet' : 'Hayır'}
+- Fotoğraf Sayısı: ${photoCount}
 - Piyasa süresi: ${listing.daysOnMarket} gün
 - Fiyat geçmişi: ${JSON.stringify(listing.priceHistory)}
 - Fiyat düşüşü: ${priceDrop > 0 ? priceDrop.toLocaleString('tr-TR') + ' TL' : 'Yok'}
@@ -85,19 +111,26 @@ export class MessageGenerator {
 ${comparable ? `- Bölge Medyanı: ${comparable.medianPricePerSqm?.toLocaleString('tr-TR')} TL/m²
 - Fark: %${comparable.diffFromMedian?.toFixed(1)}` : ''}
 
+İLAN AÇIKLAMASI:
+${description ? description.substring(0, 500) : 'Açıklama belirtilmemiş'}
+
+İLAN ÖZELLİKLERİ:
+${allFeatures.length > 0 ? allFeatures.join(', ') : 'Belirtilmemiş'}
+
 KURALLAR:
 1. Mesaj kısa olsun (max 4-5 cümle, 3 paragraf)
 2. İlan sahibinin ismini kullan (varsa)
 3. Bölgeyi spesifik belirt (örn: "Pendik Yenişehir bölgesinde")
-4. Fiyat düşüşü varsa nazikçe değin
-5. Piyasa süresi uzunsa değer öner
-6. "Emlakçıyım" gibi doğrudan ifadelerden kaçın, "danışman" veya "uzman" de
-7. Değer öner: "Bölgede aktif alıcı portföyümüz var"
-8. Komisyon konusuna değinme (henüz erken)
-9. Nazik, profesyonel Türkçe
-10. Emoji KULLANMA
-11. Sonunda nazikçe telefon/randevu talep et
-12. İmza: "${agentName}"
+4. İlanın öne çıkan özelliğini vurgula (bina yaşı, kat, ısınma, vb.)
+5. Fiyat düşüşü varsa nazikçe değin
+6. Piyasa süresi uzunsa değer öner
+7. "Emlakçıyım" gibi doğrudan ifadelerden kaçın, "danışman" veya "uzman" de
+8. Değer öner: "Bölgede aktif alıcı portföyümüz var"
+9. Komisyon konusuna değinme (henüz erken)
+10. Nazik, profesyonel Türkçe
+11. Emoji KULLANMA
+12. Sonunda nazikçe telefon/randevu talep et
+13. İmza: "${agentName}"
 
 Sadece mesaj metnini yaz, başka açıklama ekleme.`;
 
