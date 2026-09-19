@@ -325,6 +325,84 @@
     return parts[2] || '';
   }
 
+  // Floating action button - Leadseak'a ekle
+  function createFloatingActionButton() {
+    // Zaten varsa ekleme
+    if (document.getElementById('leadseak-fab')) return;
+
+    const fab = document.createElement('div');
+    fab.id = 'leadseak-fab';
+    fab.innerHTML = `
+      <button id="leadseak-fab-btn" title="Leadseak'a Ekle">
+        <span class="fab-icon">🎯</span>
+        <span class="fab-text">Leadseak</span>
+      </button>
+    `;
+
+    // Stil ekle
+    const style = document.createElement('style');
+    style.textContent = `
+      #leadseak-fab {
+        position: fixed;
+        bottom: 24px;
+        right: 24px;
+        z-index: 999999;
+        font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+      }
+      #leadseak-fab-btn {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        padding: 12px 18px;
+        background: linear-gradient(135deg, #3b82f6 0%, #1e40af 100%);
+        color: white;
+        border: none;
+        border-radius: 50px;
+        font-size: 14px;
+        font-weight: 600;
+        cursor: pointer;
+        box-shadow: 0 4px 14px rgba(59, 130, 246, 0.4);
+        transition: all 0.2s ease;
+      }
+      #leadseak-fab-btn:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 6px 20px rgba(59, 130, 246, 0.5);
+      }
+      #leadseak-fab-btn:active {
+        transform: translateY(0);
+      }
+      #leadseak-fab-btn .fab-icon {
+        font-size: 18px;
+      }
+      .leadseak-toast {
+        position: fixed;
+        top: 24px;
+        right: 24px;
+        padding: 12px 20px;
+        background: #10b981;
+        color: white;
+        border-radius: 8px;
+        font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+        font-size: 14px;
+        font-weight: 500;
+        box-shadow: 0 4px 14px rgba(0,0,0,0.15);
+        z-index: 9999999;
+        animation: slideIn 0.3s ease;
+      }
+      @keyframes slideIn {
+        from { transform: translateX(120%); opacity: 0; }
+        to { transform: translateX(0); opacity: 1; }
+      }
+    `;
+    document.head.appendChild(style);
+    document.body.appendChild(fab);
+
+    // Butona tıklandığında popup'ı aç
+    document.getElementById('leadseak-fab-btn').addEventListener('click', () => {
+      chrome.runtime.sendMessage({ action: 'openPopup' });
+    });
+  }
+
   // Sahibinden'deki kullanıcı bilgisini tespit et
   function extractSahibindenUser() {
     try {
@@ -483,6 +561,9 @@
 
   // Sayfa yüklendiğinde bildir
   console.log('Portfolio Intel content script loaded');
+
+  // Sahibinden sayfasında floating action button göster
+  createFloatingActionButton();
 
   // Sayfa yüklendiğinde bir event gönder
   document.dispatchEvent(new CustomEvent('portfolio-intel-ready'));

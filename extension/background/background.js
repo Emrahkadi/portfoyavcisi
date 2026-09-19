@@ -1,35 +1,65 @@
 // Background Service Worker
-// API iletişimi ve koordinasyon
+// Leadseak - Lead Seek extension
 
-const API_BASE = 'http://localhost:3000';
-
-// Extension kurulduğunda
-chrome.runtime.onInstalled.addListener(() => {
-  console.log('Portfolio Intel extension installed');
-});
-
-// Tab güncellendiğinde
+// Tab güncellendiğinde Sahibinden'de bildirim göster
 chrome.tabs.onUpdated.addListener((tabId, changeInfo, tab) => {
   if (changeInfo.status === 'complete' && tab.url?.includes('sahibinden.com')) {
-    // Sayfa yüklendi, content script otomatik çalışacak
-    console.log('Sahibinden page loaded:', tab.url);
+    // Toolbar icon'a badge ekle
+    chrome.action.setBadgeText({
+      tabId,
+      text: '●',
+    });
+    chrome.action.setBadgeBackgroundColor({
+      tabId,
+      color: '#10b981', // yeşil
+    });
+
+    // Sayfaya bilgilendirme mesajı gönder
+    chrome.tabs.sendMessage(tabId, {
+      action: 'sahibindenDetected',
+      url: tab.url,
+    }).catch(() => {
+      // Content script henüz yüklenmemiş olabilir
+    });
+  } else if (changeInfo.status === 'complete') {
+    // Sahibinden dışındaki sayfalarda badge'i kaldır
+    chrome.action.setBadgeText({ tabId, text: '' });
   }
 });
 
 // Message handler
 chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
+  if (request.action === 'openPopup') {
+    // Mevcut tab için popup'ı aç
+    chrome.action.openPopup();
+    return true;
+  }
+
   if (request.action === 'apiCall') {
     handleApiCall(request)
       .then(sendResponse)
       .catch(err => sendResponse({ error: err.message }));
     return true;
   }
+
+  if (request.action === 'getApiBase') {
+    chrome.storage.local.get(['apiBase']).then(stored => {
+      sendResponse({ apiBase: stored.apiBase || 'http://localhost:3002' });
+    });
+    return true;
+  }
 });
 
 async function handleApiCall(request) {
-  const { endpoint, method = 'GET', body } = request;
+  const { endpoint, method = 'GET', body, useStoredApiBase = false } = request;
 
-  const response = await fetch(`${API_BASE}${endpoint}`, {
+  let apiBase = 'http://localhost:3002';
+  if (useStoredApiBase) {
+    const stored = await chrome.storage.local.get(['apiBase']);
+    apiBase = stored.apiBase || apiBase;
+  }
+
+  const response = await fetch(`${apiBase}${endpoint}`, {
     method,
     headers: { 'Content-Type': 'application/json' },
     credentials: 'include',
@@ -37,10 +67,8 @@ async function handleApiCall(request) {
   });
 
   const data = await response.json();
-
   if (!response.ok) {
     throw new Error(data.error || 'API error');
   }
-
   return data;
 }
