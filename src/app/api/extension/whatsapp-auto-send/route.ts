@@ -131,7 +131,6 @@ export async function POST(req: NextRequest) {
           where: { id: savedMessage.id },
           data: {
             externalId: whatsappResult.messageId,
-            status: 'SENT',
           },
         });
       }

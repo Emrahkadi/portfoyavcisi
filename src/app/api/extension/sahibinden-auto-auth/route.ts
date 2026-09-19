@@ -69,7 +69,7 @@ export async function POST(req: NextRequest) {
       userId: user.id,
       email: user.email,
       role: user.role,
-      organizationId: user.organizationId,
+      organizationId: user.organizationId!,
     });
 
     return NextResponse.json({
@@ -79,8 +79,8 @@ export async function POST(req: NextRequest) {
         id: user.id,
         email: user.email,
         name: user.name,
-        organizationId: user.organizationId,
-        organizationName: user.organization.name,
+        organizationId: user.organizationId!,
+        organizationName: user.organization?.name || 'Emlak Ofisi',
         isNewUser: !user.createdAt || (Date.now() - new Date(user.createdAt).getTime() < 5000),
       },
     });
