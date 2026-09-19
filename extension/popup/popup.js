@@ -1,7 +1,8 @@
 // Popup script - Basit ve etkili
 // Token-based auth kullanır
 
-const API_BASE = 'https://portfoyavcisi.com';
+// Vercel deployment URL - portfoyavcisi.com domain henüz hazır değil
+const API_BASE = 'https://portfoyavcisi.vercel.app';
 
 // DOM Elements
 const loginSection = document.getElementById('loginSection');
