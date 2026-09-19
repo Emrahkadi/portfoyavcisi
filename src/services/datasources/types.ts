@@ -13,6 +13,7 @@ export interface RawListing {
   rooms?: string;
   sizeSqm: number;
   price: number;
+  pricePerSqm?: number;
   city: string;
   district: string;
   neighborhood?: string;

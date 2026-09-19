@@ -121,7 +121,7 @@ export class AIEvaluator {
 - Oda: ${listing.rooms || 'Belirtilmemiş'}
 - m²: ${listing.sizeSqm}
 - Fiyat: ${listing.price.toLocaleString('tr-TR')} TL
-- m² fiyatı: ${listing.pricePerSqm.toLocaleString('tr-TR')} TL
+- m² fiyatı: ${(listing.pricePerSqm || 0).toLocaleString('tr-TR')} TL
 - Konum: ${listing.city}/${listing.district}/${listing.neighborhood || ''}
 - Sahibinden mi: ${listing.isOwner ? 'Evet' : 'Hayır (emlakçı)'}
 - Piyasa süresi: ${listing.daysOnMarket} gün

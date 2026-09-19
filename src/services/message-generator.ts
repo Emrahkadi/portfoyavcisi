@@ -74,7 +74,7 @@ export class MessageGenerator {
 - Konum: ${listing.district}/${listing.neighborhood || ''}
 - Fiyat: ${listing.price.toLocaleString('tr-TR')} TL
 - m²: ${listing.sizeSqm}
-- m² Fiyatı: ${listing.pricePerSqm.toLocaleString('tr-TR')} TL
+- m² Fiyatı: ${(listing.pricePerSqm || 0).toLocaleString('tr-TR')} TL
 - Oda: ${listing.rooms || 'Belirtilmemiş'}
 - Piyasa süresi: ${listing.daysOnMarket} gün
 - Fiyat geçmişi: ${JSON.stringify(listing.priceHistory)}
