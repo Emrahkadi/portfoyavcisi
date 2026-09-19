@@ -3,15 +3,16 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=400, initial-scale=1.0">
-  <title>Portfolio Intel</title>
+  <title>Leadseak - Lead Avcısı</title>
   <link rel="stylesheet" href="popup.css">
 </head>
 <body>
   <div class="container">
     <!-- Header -->
     <div class="header">
-      <h1>� Portföy Avcısı</h1>
+      <h1>🎯 Leadseak</h1>
       <div class="status" id="status">Bağlanıyor...</div>
+      <div id="currentUser" class="current-user hidden"></div>
     </div>
 
     <!-- Login Section -->
@@ -21,10 +22,18 @@
       <input type="password" id="password" placeholder="Şifre" />
       <button id="loginBtn" class="btn-primary">Giriş Yap</button>
       <div id="loginError" class="error hidden"></div>
+      <div class="info-box small">
+        💡 Sahibinden'de giriş yaptıysanız, Leadseak'a otomatik giriş yapılır.
+      </div>
     </div>
 
     <!-- Main Section -->
     <div id="mainSection" class="section hidden">
+      <!-- Info: Hangi user ile işlem yapıyor -->
+      <div class="info-box">
+        ℹ️ İlanlar <strong id="loggedInUserEmail"></strong> hesabına eklenecek
+      </div>
+
       <!-- Action Buttons -->
       <div class="actions">
         <button id="fetchBtn" class="btn-primary">📥 Günlük İlanları Getir</button>

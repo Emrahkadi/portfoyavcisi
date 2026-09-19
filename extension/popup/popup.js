@@ -38,15 +38,60 @@ async function init() {
   if (stored.authToken) {
     authToken = stored.authToken;
     API_BASE = stored.apiBase || API_BASE;
-    showMainSection(stored.userEmail);
+    showMainSection(stored.userEmail, stored.userName);
   } else {
     showLoginSection();
+    // Sahibinden'de login olmuşsa otomatik dene
+    trySahibindenAutoAuth();
   }
 
   loginBtn.addEventListener('click', handleLogin);
   fetchBtn.addEventListener('click', handleFetchListings);
   reloadPageBtn.addEventListener('click', handleReloadPage);
   logoutBtn.addEventListener('click', handleLogout);
+}
+
+// Sahibinden'deki kullanıcı ile otomatik login/register dene
+async function trySahibindenAutoAuth() {
+  try {
+    const [tab] = await chrome.tabs.query({ active: true, currentWindow: true });
+    if (!tab?.url?.includes('sahibinden.com')) return;
+
+    const response = await chrome.tabs.sendMessage(tab.id, {
+      action: 'extractSahibindenUser',
+    });
+
+    if (response?.user?.loggedIn) {
+      const sbUser = response.user;
+      showNotification('🔄 Sahibinden hesabınızla giriş yapılıyor...');
+
+      const authResponse = await fetch(`${API_BASE}/api/extension/sahibinden-auto-auth`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(sbUser),
+      });
+
+      const data = await authResponse.json();
+      if (authResponse.ok) {
+        authToken = data.token;
+        await chrome.storage.local.set({
+          authToken,
+          apiBase: API_BASE,
+          userEmail: data.user.email,
+          userName: data.user.name,
+        });
+        showMainSection(data.user.email, data.user.name);
+        if (data.user.isNewUser) {
+          showNotification(`✅ Hoş geldiniz ${data.user.name}! Hesabınız oluşturuldu.`);
+        } else {
+          showNotification(`✅ Hoş geldiniz ${data.user.name}!`);
+        }
+      }
+    }
+  } catch (err) {
+    // Sessizce devam et - normal login gösterilecek
+    console.log('Sahibinden auto-auth skipped:', err.message);
+  }
 }
 
 // Login
@@ -311,12 +356,25 @@ function showLoginSection() {
   statusEl.className = 'status disconnected';
 }
 
-function showMainSection(email) {
+function showMainSection(email, name) {
   loginSection.classList.add('hidden');
   mainSection.classList.remove('hidden');
   statusEl.textContent = 'Bağlı';
   statusEl.className = 'status connected';
-  statusEl.title = email;
+  statusEl.title = name ? `${name} (${email})` : email;
+
+  // Kullanıcı adını göster
+  const currentUserEl = document.getElementById('currentUser');
+  if (currentUserEl && name) {
+    currentUserEl.textContent = `👤 ${name}`;
+    currentUserEl.classList.remove('hidden');
+  }
+
+  // Info box'taki email
+  const loggedInEmailEl = document.getElementById('loggedInUserEmail');
+  if (loggedInEmailEl) {
+    loggedInEmailEl.textContent = email;
+  }
 }
 
 function showError(msg) {

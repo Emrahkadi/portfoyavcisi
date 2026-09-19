@@ -325,6 +325,79 @@
     return parts[2] || '';
   }
 
+  // Sahibinden'deki kullanıcı bilgisini tespit et
+  function extractSahibindenUser() {
+    try {
+      // Farklı selektörlerle dene
+      const selectors = [
+        // Header'daki kullanıcı adı
+        '.user-name',
+        '.username',
+        '#userInfo a',
+        'a[href*="/kullanici/"]',
+        // Profil menüsü
+        '.profile-menu .name',
+        '.user-menu-name',
+        '.header-user-name',
+        // Hesap bilgileri sayfası
+        '.account-info .name',
+      ];
+
+      let username = '';
+      let userId = '';
+
+      for (const sel of selectors) {
+        const el = document.querySelector(sel);
+        if (el) {
+          const text = el.textContent.trim();
+          const href = el.href || '';
+          const m = href.match(/\/kullanici\/([^\/\?]+)/);
+          if (m) userId = m[1];
+          if (text) username = text;
+          if (username || userId) break;
+        }
+      }
+
+      // localStorage / cookie'den de bakalım
+      try {
+        const cookies = document.cookie.split(';');
+        for (const c of cookies) {
+          const [k, v] = c.trim().split('=');
+          if (k === 'userId' || k === 'uid' || k === 'user_id') userId = v || userId;
+          if (k === 'userName' || k === 'username') username = v || username;
+        }
+      } catch {}
+
+      // dataLayer veya global değişkenlerden
+      try {
+        if (window.sahibinden && window.sahibinden.user) {
+          username = username || window.sahibinden.user.username;
+          userId = userId || window.sahibinden.user.id;
+        }
+      } catch {}
+
+      if (!userId && !username) {
+        return { loggedIn: false };
+      }
+
+      // Leadseak email'i oluştur: sahibinden-<id>@leadseak.com
+      const email = userId
+        ? `sahibinden-${userId}@leadseak.com`
+        : `${username.toLowerCase().replace(/[^a-z0-9]/g, '-')}@leadseak.com`;
+
+      return {
+        loggedIn: true,
+        userId,
+        username,
+        name: username,
+        email,
+      };
+    } catch (err) {
+      console.warn('Sahibinden user extract error:', err);
+      return { loggedIn: false, error: err.message };
+    }
+  }
+
   // Message listener
   chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
     if (request.action === 'extractListings') {
@@ -399,6 +472,12 @@
           sendResponse({ error: err.message });
         });
       return true; // async response
+    }
+
+    if (request.action === 'extractSahibindenUser') {
+      const user = extractSahibindenUser();
+      sendResponse({ user });
+      return true;
     }
   });
 
