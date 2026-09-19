@@ -8,19 +8,32 @@ import { aiEvaluator } from '@/services/ai-evaluator';
 import { leadScorer } from '@/services/lead-scorer';
 import { audit } from '@/lib/audit';
 
+// CORS headers helper
+function corsHeaders() {
+  return {
+    'Access-Control-Allow-Origin': '*',
+    'Access-Control-Allow-Methods': 'GET, POST, PUT, DELETE, OPTIONS',
+    'Access-Control-Allow-Headers': 'Content-Type, Authorization',
+  };
+}
+
+export async function OPTIONS() {
+  return new NextResponse(null, { status: 200, headers: corsHeaders() });
+}
+
 export async function POST(req: NextRequest) {
   try {
     // Token'ı header'dan al
     const authHeader = req.headers.get('authorization');
     if (!authHeader?.startsWith('Bearer ')) {
-      return NextResponse.json({ error: 'Yetkisiz' }, { status: 401 });
+      return NextResponse.json({ error: 'Yetkisiz' }, { status: 401, headers: corsHeaders() });
     }
 
     const token = authHeader.substring(7);
     const session = await verifyExtensionToken(token);
 
     if (!session) {
-      return NextResponse.json({ error: 'Geçersiz token' }, { status: 401 });
+      return NextResponse.json({ error: 'Geçersiz token' }, { status: 401, headers: corsHeaders() });
     }
 
     const body = await req.json();
@@ -50,7 +63,7 @@ export async function POST(req: NextRequest) {
     if (missing.length > 0) {
       return NextResponse.json(
         { error: `Eksik bilgi: ${missing.join(', ')}` },
-        { status: 400 }
+        { status: 400, headers: corsHeaders() }
       );
     }
 
@@ -123,9 +136,9 @@ export async function POST(req: NextRequest) {
         title: listing.title,
         aiScore: listing.aiScore,
       },
-    });
+    }, { headers: corsHeaders() });
   } catch (err) {
     console.error('Extension add-listing error:', err);
-    return NextResponse.json({ error: 'Sunucu hatası' }, { status: 500 });
+    return NextResponse.json({ error: 'Sunucu hatası' }, { status: 500, headers: corsHeaders() });
   }
 }

@@ -8,22 +8,35 @@ import { SignJWT } from 'jose';
 const JWT_SECRET = process.env.JWT_SECRET || 'dev-secret-change-me-in-production-min-32-chars';
 const secretKey = new TextEncoder().encode(JWT_SECRET);
 
+// CORS headers helper
+function corsHeaders() {
+  return {
+    'Access-Control-Allow-Origin': '*',
+    'Access-Control-Allow-Methods': 'GET, POST, PUT, DELETE, OPTIONS',
+    'Access-Control-Allow-Headers': 'Content-Type, Authorization',
+  };
+}
+
+export async function OPTIONS() {
+  return new NextResponse(null, { status: 200, headers: corsHeaders() });
+}
+
 export async function POST(req: NextRequest) {
   try {
     const { email, password } = await req.json();
 
     if (!email || !password) {
-      return NextResponse.json({ error: 'Email ve şifre gerekli' }, { status: 400 });
+      return NextResponse.json({ error: 'Email ve şifre gerekli' }, { status: 400, headers: corsHeaders() });
     }
 
     const user = await prisma.user.findUnique({ where: { email } });
     if (!user) {
-      return NextResponse.json({ error: 'Geçersiz email veya şifre' }, { status: 401 });
+      return NextResponse.json({ error: 'Geçersiz email veya şifre' }, { status: 401, headers: corsHeaders() });
     }
 
     const valid = await verifyPassword(password, user.passwordHash);
     if (!valid) {
-      return NextResponse.json({ error: 'Geçersiz email veya şifre' }, { status: 401 });
+      return NextResponse.json({ error: 'Geçersiz email veya şifre' }, { status: 401, headers: corsHeaders() });
     }
 
     // Extension için JWT token oluştur (7 gün geçerli)
@@ -54,9 +67,9 @@ export async function POST(req: NextRequest) {
         name: user.name,
         organizationId: user.organizationId,
       },
-    });
+    }, { headers: corsHeaders() });
   } catch (err) {
     console.error('Extension auth error:', err);
-    return NextResponse.json({ error: 'Giriş başarısız' }, { status: 500 });
+    return NextResponse.json({ error: 'Giriş başarısız' }, { status: 500, headers: corsHeaders() });
   }
 }

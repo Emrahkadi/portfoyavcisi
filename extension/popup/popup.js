@@ -1,7 +1,7 @@
 // Popup script - Basit ve etkili
 // Token-based auth kullanır
 
-const API_BASE = 'http://localhost:3000';
+const API_BASE = 'https://portfoyavcisi.com';
 
 // DOM Elements
 const loginSection = document.getElementById('loginSection');
