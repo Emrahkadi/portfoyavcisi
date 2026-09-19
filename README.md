@@ -1,8 +1,10 @@
-# 🎯 Portföy Avcısı — Gayrimenkul Portföy Kazanım Platformu
+# 🎯 Leadseak — Gayrimenkul Lead Avcısı & CRM Platformu
 
-> **Lead Intelligence & CRM sistemi.** Sahibinden'e bağımlı olmayan, modüler mimari.
+> **Lead Seek (Müşteri Adayı Ara) — Lead Intelligence & CRM sistemi.** Sahibinden'e bağımlı olmayan, modüler mimari.
 
-**Domain:** `portfoyavcisi.com`
+**Domain:** `leadseak.com`
+
+**Marka:** Leadseak = Lead + Seek (Müşteri Adayı Ara)
 
 ## 🎯 Problem
 

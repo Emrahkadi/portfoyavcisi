@@ -1,8 +1,8 @@
 // Popup script - Basit ve etkili
 // Token-based auth kullanır
 
-// Vercel deployment URL - portfoyavcisi.com domain henüz hazır değil
-const API_BASE = 'https://portfoyavcisi.vercel.app';
+// Leadseak - Lead Seek (Müşteri Adayı Ara)
+const API_BASE = 'https://leadseak.com';
 
 // DOM Elements
 const loginSection = document.getElementById('loginSection');

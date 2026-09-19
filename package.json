@@ -1,8 +1,8 @@
 {
-  "name": "portfolio-intel-platform",
-  "version": "0.1.0",
+  "name": "leadseak",
+  "version": "1.0.0",
   "private": true,
-  "description": "Gayrimenkul Portföy Kazanım Platformu - Lead Intelligence & CRM",
+  "description": "Leadseak - Gayrimenkul Lead Avcısı & CRM Platformu",
   "scripts": {
     "dev": "next dev",
     "build": "prisma generate && next build",

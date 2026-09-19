@@ -10,10 +10,10 @@ export default function HomePage() {
       {/* Hero */}
       <header className="container mx-auto px-4 py-20 text-center">
         <h1 className="text-5xl font-bold tracking-tight mb-6">
-          Portföy Avcısı
+          Leadseak
         </h1>
         <p className="text-xl text-muted-foreground max-w-2xl mx-auto mb-2">
-          Gayrimenkul Portföy Kazanım Platformu
+          Gayrimenkul Lead Avcısı & CRM Platformu
         </p>
         <p className="text-xl text-muted-foreground max-w-2xl mx-auto mb-8">
           Sahibinden'e bağımlı olmayan, modüler lead intelligence & CRM sistemi.
@@ -119,7 +119,7 @@ export default function HomePage() {
 
       {/* Footer */}
       <footer className="border-t py-8 text-center text-sm text-muted-foreground">
-        <p>© 2026 Portföy Avcısı. Lead Intelligence & CRM.</p>
+        <p>© 2026 Leadseak. Lead Seek - Müşteri Adayı Ara.</p>
       </footer>
     </div>
   );

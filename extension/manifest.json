@@ -1,6 +1,6 @@
 {
   "manifest_version": 3,
-  "name": "Portföy Avcısı - Emlak Asistanı",
+  "name": "Leadseak - Emlak Lead Avcısı",
   "version": "1.0.0",
   "description": "Sahibinden'deki günlük ilanları portföyünüze ekleyin. AI analiz ve WhatsApp mesajı otomatik hazırlanır.",
   "permissions": [
@@ -10,8 +10,8 @@
   ],
   "host_permissions": [
     "https://www.sahibinden.com/*",
-    "https://portfoyavcisi.vercel.app/*",
-    "https://portfoyavcisi.com/*",
+    "https://leadseak.com/*",
+    "https://www.leadseak.com/*",
     "http://localhost:3000/*"
   ],
   "background": {

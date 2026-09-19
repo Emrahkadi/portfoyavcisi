@@ -86,7 +86,7 @@ export default function LoginPage() {
               </Link>
             </p>
             <div className="text-xs text-center text-muted-foreground bg-slate-50 p-2 rounded">
-              <strong>Demo:</strong> demo@portfoyavcisi.com / demo1234
+              <strong>Demo:</strong> demo@leadseak.com / demo1234
             </div>
           </form>
         </CardContent>

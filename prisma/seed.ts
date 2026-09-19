@@ -23,10 +23,10 @@ async function main() {
   // Demo user
   const passwordHash = await bcrypt.hash('demo1234', 10);
   await prisma.user.upsert({
-    where: { email: 'demo@portfoyavcisi.com' },
+    where: { email: 'demo@leadseak.com' },
     update: {},
     create: {
-      email: 'demo@portfoyavcisi.com',
+      email: 'demo@leadseak.com',
       passwordHash,
       name: 'Demo Agent',
       role: 'AGENT',
@@ -35,7 +35,7 @@ async function main() {
   });
 
   console.log('✅ Seed completed!');
-  console.log('📧 Demo login: demo@portfoyavcisi.com / demo1234');
+  console.log('📧 Demo login: demo@leadseak.com / demo1234');
   console.log('💡 Dashboard boş başlayacak, ilanları kendiniz ekleyeceksiniz');
 }
 

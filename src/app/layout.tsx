@@ -2,8 +2,8 @@ import type { Metadata } from 'next';
 import './globals.css';
 
 export const metadata: Metadata = {
-  title: 'Portföy Avcısı - Gayrimenkul Portföy Kazanım Platformu',
-  description: 'Lead Intelligence & CRM sistemi. Emsal motoru, AI değerlendirme, WhatsApp entegrasyonu.',
+  title: 'Leadseak - Gayrimenkul Lead Avcısı & CRM',
+  description: 'Lead Seek (Müşteri Adayı Ara) - Lead Intelligence & CRM sistemi. Emsal motoru, AI değerlendirme, WhatsApp entegrasyonu.',
 };
 
 export default function RootLayout({

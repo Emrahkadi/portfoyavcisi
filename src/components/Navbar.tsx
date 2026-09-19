@@ -1,4 +1,4 @@
-// Navbar - Üst navigasyon
+﻿// Navbar - Üst navigasyon
 'use client';
 
 import Link from 'next/link';
@@ -28,7 +28,7 @@ export function Navbar({ userName }: { userName: string }) {
         <div className="flex h-16 items-center justify-between">
           <div className="flex items-center gap-8">
             <Link href="/dashboard" className="font-bold text-xl">
-              � Portföy Avcısı
+              � Leadseak
             </Link>
             <div className="flex gap-1">
               {navItems.map((item) => {
