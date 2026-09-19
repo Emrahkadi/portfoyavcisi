@@ -1,8 +1,20 @@
 // POST /api/extension/sahibinden-auto-auth
 // Sahibinden'deki kullanıcı bilgisi ile otomatik login/register
 import { NextRequest, NextResponse } from 'next/server';
+import { SignJWT } from 'jose';
 import { prisma } from '@/lib/db';
 import { hashPassword, createSession } from '@/lib/auth';
+
+const JWT_SECRET = process.env.JWT_SECRET || 'dev-secret-change-me-in-production-min-32-chars';
+const secretKey = new TextEncoder().encode(JWT_SECRET);
+
+async function createExtensionToken(payload: { userId: string; email: string; role: string; organizationId: string }): Promise<string> {
+  return await new SignJWT({ ...payload, type: 'extension' })
+    .setProtectedHeader({ alg: 'HS256' })
+    .setIssuedAt()
+    .setExpirationTime('7d')
+    .sign(secretKey);
+}
 
 export async function POST(req: NextRequest) {
   try {
@@ -52,8 +64,8 @@ export async function POST(req: NextRequest) {
       });
     }
 
-    // Session oluştur
-    const token = await createSession({
+    // Extension için özel token oluştur (type: 'extension' ile)
+    const token = await createExtensionToken({
       userId: user.id,
       email: user.email,
       role: user.role,

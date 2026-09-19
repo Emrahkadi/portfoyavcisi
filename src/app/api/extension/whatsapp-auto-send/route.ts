@@ -66,10 +66,19 @@ export async function POST(req: NextRequest) {
       await aiEvaluator.evaluateAndSave(listingId);
     }
 
-    // 2. Lead yoksa oluştur
+    // 2. Lead yoksa oluştur (varsa tekrar oluşturma)
     let lead = listing.lead;
     if (!lead && listing.contactPhone) {
-      lead = await leadScorer.createLeadFromListing(listingId, session.organizationId as string);
+      try {
+        lead = await leadScorer.createLeadFromListing(listingId, session.organizationId as string);
+      } catch (err: any) {
+        // Unique constraint - lead zaten oluşmuş olabilir, tekrar çek
+        if (err.code === 'P2002') {
+          lead = await prisma.lead.findUnique({ where: { listingId } });
+        } else {
+          throw err;
+        }
+      }
     }
 
     // 3. Agent bilgilerini al
@@ -89,21 +98,20 @@ export async function POST(req: NextRequest) {
           content: message,
           channel: 'WHATSAPP',
           direction: 'OUTBOUND',
-          status: sendWhatsApp && whatsappService.isEnabled() ? 'SENT' : 'DRAFT',
-          aiGenerated: true,
-          aiCategory: 'FIRST_CONTACT',
+          aiCategory: 'OTHER',
+          aiConfidence: 0.85,
           leadId: lead.id,
           userId: session.userId as string,
-          sentAt: sendWhatsApp && whatsappService.isEnabled() ? new Date() : null,
         },
       });
 
+      const isSent = sendWhatsApp && whatsappService.isEnabled();
       await prisma.lead.update({
         where: { id: lead.id },
         data: {
           aiSummary: message,
-          status: sendWhatsApp && whatsappService.isEnabled() ? 'CONTACTED' : 'NEW',
-          contactedAt: sendWhatsApp && whatsappService.isEnabled() ? new Date() : lead.contactedAt,
+          status: isSent ? 'CONTACTED' : 'NEW',
+          lastContactAt: isSent ? new Date() : lead.lastContactAt,
         },
       });
     }
